@@ -10,7 +10,7 @@ namespace LoginModule.Model
 
         public string Lastname { get; set; }
 
-        public string Email { get; set; }
+        public string[] Emails { get; set; }
 
         public DateTime RegisteredAt { get; set; }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using LoginModule.Model;
+using Microsoft.AspNetCore.Mvc;
 using Raven.Client.Documents;
 using Raven.Embedded;
 using Xunit;
@@ -32,7 +33,7 @@ namespace LoginModule.Tests
         {
             var loginModule = new LoginController(_documentStore, DatabaseName);
             
-            loginModule.RegisterUser("John", "Doe", "john.doe@foobar.me","foobar password");
+            loginModule.RegisterUser("John", "Doe", new[] {"john.doe@foobar.me", "anonymous.mail@foobar.com" }, "foobar password");
 
             using (var session = _documentStore.OpenSession(DatabaseName))
             {
@@ -41,6 +42,36 @@ namespace LoginModule.Tests
 
                 Assert.NotNull(fetchedUser);
             }
+        }
+
+        [Fact]
+        public void Can_login_user()
+        {
+            var loginModule = new LoginController(_documentStore, DatabaseName);            
+            loginModule.RegisterUser("John", "Doe", new[] {"john.doe@foobar.me", "anonymous.mail@foobar.com" }, "foobar password");
+
+            var successResult = loginModule.Login("anonymous.mail@foobar.com", "foobar password");
+            Assert.IsType<OkResult>(successResult);
+
+            var unauthorizedResult = loginModule.Login("anonymous.mail@foobar.com", "wrong password");
+            Assert.IsType<UnauthorizedResult>(unauthorizedResult);
+        }
+
+        [Fact]
+        public void Can_count_registrations_by_date()
+        {
+            var loginModule = new LoginController(_documentStore, DatabaseName);            
+            loginModule.RegisterUser("John", "Doe", new[] {"john.doe@foobar.me", "anonymous.mail@foobar.com" }, "foobar password");
+            loginModule.RegisterUser("Jack", "Doe", new[] {"jack.doe@foobar.me" }, "foobar password");
+            loginModule.RegisterUser("Jane", "Doe", new[] {"jane.doe@foobar.me" }, "foobar password");
+
+            var results = ((OkObjectResult) loginModule.CountByRegistrationDate()).Value as CountByRegistrationDate.Result[];
+
+            Assert.NotNull(results);
+            Assert.Single(results);
+
+            Assert.Equal(3, results[0].Count);
+            Assert.Equal(DateTime.Now.Date,results[0].RegistrationDate);
         }
 
         public void Dispose()
