@@ -25,7 +25,7 @@ namespace LoginModule.Tests
                     "--Setup.Mode=None"
                 }
             });
-            _documentStore = EmbeddedServer.Instance.GetDocumentStore(DatabaseName);         
+            _documentStore = EmbeddedServer.Instance.GetDocumentStore(DatabaseName);                    
         }
 
         [Fact]
@@ -58,14 +58,31 @@ namespace LoginModule.Tests
         }
 
         [Fact]
-        public void Can_count_registrations_by_date()
+        public void Can_count_registrations_by_date_static_index()
         {
             var loginModule = new LoginController(_documentStore, DatabaseName);            
             loginModule.RegisterUser("John", "Doe", new[] {"john.doe@foobar.me", "anonymous.mail@foobar.com" }, "foobar password");
             loginModule.RegisterUser("Jack", "Doe", new[] {"jack.doe@foobar.me" }, "foobar password");
             loginModule.RegisterUser("Jane", "Doe", new[] {"jane.doe@foobar.me" }, "foobar password");
 
-            var results = ((OkObjectResult) loginModule.CountByRegistrationDate()).Value as CountByRegistrationDate.Result[];
+            var results = ((OkObjectResult) loginModule.CountByRegistrationDateStaticIndex()).Value as CountByRegistrationDate.Result[];
+
+            Assert.NotNull(results);
+            Assert.Single(results);
+
+            Assert.Equal(3, results[0].Count);
+            Assert.Equal(DateTime.Now.Date,results[0].RegistrationDate);
+        }
+
+        [Fact]
+        public void Can_count_registrations_by_date_dynamic_index()
+        {
+            var loginModule = new LoginController(_documentStore, DatabaseName, false);            
+            loginModule.RegisterUser("John", "Doe", new[] {"john.doe@foobar.me", "anonymous.mail@foobar.com" }, "foobar password");
+            loginModule.RegisterUser("Jack", "Doe", new[] {"jack.doe@foobar.me" }, "foobar password");
+            loginModule.RegisterUser("Jane", "Doe", new[] {"jane.doe@foobar.me" }, "foobar password");
+
+            var results = (dynamic)((OkObjectResult) loginModule.CountByRegistrationDateAutoIndex()).Value;
 
             Assert.NotNull(results);
             Assert.Single(results);
