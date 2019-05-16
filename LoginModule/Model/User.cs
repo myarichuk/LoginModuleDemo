@@ -1,4 +1,7 @@
 ﻿// ReSharper disable UnusedMember.Global
+
+using System;
+
 namespace LoginModule.Model
 {
     public class User
@@ -9,9 +12,13 @@ namespace LoginModule.Model
 
         public string Email { get; set; }
 
-        public bool IsValidated { get; set; }
+        public DateTime RegisteredAt { get; set; }
 
+        #region Security Properties
         public string HashedPassword { get; set; }
+
+        public byte[] Salt { get; set; }
+        #endregion
     }
 }
 
