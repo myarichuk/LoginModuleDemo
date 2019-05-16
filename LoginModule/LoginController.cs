@@ -72,7 +72,7 @@ namespace LoginModule
                 var queryResults =
                         from user in session.Query<User>()
                         group user by user.RegisteredAt.Date into g
-                        select new
+                        select new CountByRegistrationDate.Result
                         {
                             Count = g.Count(), 
                             RegistrationDate = g.Key
@@ -81,7 +81,6 @@ namespace LoginModule
                 return Ok(queryResults.ToArray());
             }
         }
-
 
         [HttpGet, Route("users/registrationdate2")]
         public IActionResult CountByRegistrationDateStaticIndex()

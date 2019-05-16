@@ -82,11 +82,10 @@ namespace LoginModule.Tests
             loginModule.RegisterUser("Jack", "Doe", new[] {"jack.doe@foobar.me" }, "foobar password");
             loginModule.RegisterUser("Jane", "Doe", new[] {"jane.doe@foobar.me" }, "foobar password");
 
-            var results = (dynamic)((OkObjectResult) loginModule.CountByRegistrationDateAutoIndex()).Value;
+            var results = ((OkObjectResult) loginModule.CountByRegistrationDateAutoIndex()).Value as CountByRegistrationDate.Result[];
 
             Assert.NotNull(results);
             Assert.Single(results);
-
             Assert.Equal(3, results[0].Count);
             Assert.Equal(DateTime.Now.Date,results[0].RegistrationDate);
         }
